@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* Theme tokens. If your project already defines these, delete this block and keep yours. */
+@theme {
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-primary: #1b7a4b;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #d3f0df;
+  --color-secondary: #2463a6;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #dce8f7;
+  --color-error: #c4312b;
+  --color-error-container: #fbe2df;
+  --color-surface: #f7f9f7;
+  --color-surface-dim: #dde3df;
+  --color-surface-container: #eef2ef;
+  --color-surface-container-high: #e4eae6;
+  --color-on-surface: #18201b;
+  --color-on-surface-variant: #56615a;
+  --color-outline: #c3ccc6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--color-surface-dim, #dde3df);
+  color: var(--color-on-surface, #18201b);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+
+/* Carpark markers: L.divIcon with a zero-size box; the pill anchors its tip on the point. */
+.lot-icon { background: none; border: none; }
+.lot-pin {
+  --pin-bg: var(--color-primary, #1b7a4b);
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 6px));
+  min-width: 30px;
+  padding: 1px 7px;
+  border: 2px solid #fff;
+  border-radius: 9999px;
+  background: var(--pin-bg);
+  color: #fff;
+  font: 700 12px/17px var(--font-mono);
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.lot-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--pin-bg);
+}
+.lot-pin.tone-red { --pin-bg: var(--color-error, #c4312b); }
+.lot-pin.tone-amber { --pin-bg: var(--color-amber-600, #d97706); }
+.lot-pin.tone-green { --pin-bg: var(--color-primary, #1b7a4b); }
+.lot-pin.is-selected {
+  transform: translate(-50%, calc(-100% - 6px)) scale(1.25);
+  outline: 3px solid var(--color-secondary, #2463a6);
+  outline-offset: 1px;
+}
+
+.dest-icon { background: none; border: none; }
+.dest-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--color-secondary, #2463a6);
+  box-shadow: 0 0 0 6px rgb(36 99 166 / 0.25), 0 1px 4px rgb(0 0 0 / 0.4);
+}
+
+.dest-circle {
+  stroke: var(--color-secondary, #2463a6);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill: var(--color-secondary, #2463a6);
+  fill-opacity: 0.07;
+}
+
+.leaflet-container { font-family: var(--font-sans); background: var(--color-surface-container, #eef2ef); }
+.leaflet-control-attribution { font-size: 10px; }
+.leaflet-control-attribution img { vertical-align: middle; }
