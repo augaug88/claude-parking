@@ -50,10 +50,27 @@ function clean(v) {
 }
 
 function credentials() {
-  const email = process.env.ONEMAP_EMAIL ?? "";
-  const password = process.env.ONEMAP_PASSWORD ?? "";
-  if (!email.trim() || !password.trim()) return null;
+  // Pasted env values often carry a stray space or line break, which OneMap rejects.
+  const email = (process.env.ONEMAP_EMAIL ?? "").trim();
+  const password = (process.env.ONEMAP_PASSWORD ?? "").replace(/^[\r\n]+|[\r\n]+$/g, "");
+  if (!email || !password.trim()) return null;
   return { email, password };
+}
+
+// OneMap explains a rejected login in {"error": "..."} (e.g. "Your email address is invalid.").
+// Pass that sentence on, but never if it could contain the email or password.
+async function tokenErrorReason(res, creds) {
+  let msg = "";
+  try {
+    const body = await res.json();
+    msg = typeof body?.error === "string" ? body.error.trim() : "";
+  } catch {
+    msg = "";
+  }
+  const lower = msg.toLowerCase();
+  const leaks = lower.includes(creds.email.toLowerCase()) || (creds.password.length > 3 && msg.includes(creds.password));
+  if (!msg || msg.length > 200 || leaks) return "";
+  return msg;
 }
 
 export function onemapConfigured() {
@@ -73,8 +90,10 @@ async function mintToken(creds) {
     throw new UpstreamError(502, "OneMap token service could not be reached.");
   }
   if (!res.ok) {
-    const reason =
-      res.status === 401 || res.status === 403
+    const detail = await tokenErrorReason(res, creds);
+    const reason = detail
+      ? `OneMap token service answered ${res.status}: ${detail} Check ONEMAP_EMAIL and ONEMAP_PASSWORD in Vercel.`
+      : res.status === 400 || res.status === 401 || res.status === 403
         ? `OneMap token service answered ${res.status}: the account email or password was rejected.`
         : `OneMap token service answered ${res.status}.`;
     throw new UpstreamError(res.status, reason);
